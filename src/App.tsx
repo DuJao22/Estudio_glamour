@@ -1252,35 +1252,6 @@ export default function App() {
 
       <main className="flex-1 pb-16">
         
-        {/* COMPACT FLOATING ACCESSIBILITY TEST PANEL (Saves precious assessment clicks!) */}
-        <div className="bg-white border-y border-pink-100 py-3 px-6 shadow-sm">
-          <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
-            <span className="text-[10px] font-bold text-black uppercase tracking-widest flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5 text-pink-500" /> Atalho para Teste de Perfis (Apenas 1 clique):
-            </span>
-            <div className="flex flex-wrap gap-2 justify-center">
-              <button
-                onClick={() => handleQuietLogin('dona@glamour.com', 'glamour')}
-                className="px-3 py-1 bg-black text-pink-400 text-xs font-bold rounded-lg border border-neutral-800 hover:bg-neutral-900 transition-all cursor-pointer"
-              >
-                🔑 Entrar como Dona Carla (Gestão)
-              </button>
-              <button
-                onClick={() => handleQuietLogin('ana@glamour.com', 'ana')}
-                className="px-3 py-1 bg-white text-neutral-800 text-xs font-semibold rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-all cursor-pointer"
-              >
-                👩‍🦰 Profissional (Ana)
-              </button>
-              <button
-                onClick={() => handleQuietLogin('mari@cliente.com', 'mari')}
-                className="px-3 py-1 bg-pink-50 text-pink-700 text-xs font-semibold rounded-lg border border-pink-150 hover:bg-pink-100 transition-all cursor-pointer"
-              >
-                👤 Cliente Mariana
-              </button>
-            </div>
-          </div>
-        </div>
-
         {/* LOADING INDICATOR */}
         {loading && !selectedLojaDetail && (
           <div className="py-24 text-center">
@@ -2929,6 +2900,40 @@ export default function App() {
                   {authMode === 'login' ? 'Agendar / Entrar' : 'Criar minha conta'}
                 </button>
               </form>
+
+              {authMode === 'login' && (
+                <div className="mt-4 pt-4 border-t border-neutral-100">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block text-center mb-2.5">
+                    Entrar com Perfil de Teste (1-clique)
+                  </span>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleQuietLogin('grazi@autoestima.com', 'grazi')}
+                      className="w-full px-3 py-2 bg-black hover:bg-neutral-900 text-pink-400 text-xs font-bold rounded-xl border border-neutral-800 transition-all cursor-pointer text-left flex items-center justify-between"
+                    >
+                      <span>🔑 Entrar como Dona Grazi</span>
+                      <span className="text-[9px] text-neutral-500 font-semibold uppercase">Dona</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuietLogin('laura@autoestima.com', 'laura')}
+                      className="w-full px-3 py-2 bg-[#fafafa] hover:bg-neutral-50 text-neutral-800 text-xs font-semibold rounded-xl border border-neutral-200 transition-all cursor-pointer text-left flex items-center justify-between"
+                    >
+                      <span>👩‍🦰 Profissional (Laura)</span>
+                      <span className="text-[9px] text-neutral-400 font-semibold uppercase">Prof</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuietLogin('mari@cliente.com', 'mari')}
+                      className="w-full px-3 py-2 bg-pink-50 hover:bg-pink-100 text-pink-700 text-xs font-semibold rounded-xl border border-pink-150 transition-all cursor-pointer text-left flex items-center justify-between"
+                    >
+                      <span>👤 Cliente Mariana</span>
+                      <span className="text-[9px] text-pink-400 font-semibold uppercase">Cliente</span>
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div className="mt-4 pt-4 border-t border-neutral-100 text-center">
                 <button
