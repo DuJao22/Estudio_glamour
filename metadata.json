@@ -1,0 +1,6 @@
+{
+  "name": "Studio Glamour Premium",
+  "description": "Sistema exclusivo de agendamento online do Studio Glamour Premium - Sobrancelha, Cílios, Unhas e Cabelo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
