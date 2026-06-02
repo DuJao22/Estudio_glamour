@@ -2168,7 +2168,7 @@ export default function App() {
                               <td className="p-3 text-neutral-800">{appt.cliente_nome}</td>
                               <td className="p-3 font-semibold text-neutral-900">{appt.servico_nome}</td>
                               <td className="p-3 text-xs text-neutral-500">{appt.servico_duracao} minutos</td>
-                              <td className="p-3 font-extrabold text-pink-700 text-xs">R$ {appt.servico_preco.toFixed(2)}</td>
+                              <td className="p-3 font-extrabold text-pink-700 text-xs">R$ {Number(appt.servico_preco || 0).toFixed(2)}</td>
                               <td className="p-3">
                                 <span className={`inline-block text-[9px] font-extrabold px-2.5 py-0.5 rounded-full ${
                                   appt.status === 'confirmado' ? 'bg-pink-50 border border-pink-100 text-pink-800' : 'bg-red-55 bg-red-50 text-red-700 text-xs'
@@ -2211,7 +2211,7 @@ export default function App() {
                     <span className="block text-3xl font-black text-white mt-1">
                       R$ {dashboardAgendamentos
                         .filter(a => a.status === 'confirmado')
-                        .reduce((acc, current) => acc + (current.servico_preco || 0), 0)
+                        .reduce((acc, current) => acc + (parseFloat(current.servico_preco) || 0), 0)
                         .toFixed(2)}
                     </span>
                   </div>
@@ -2308,7 +2308,7 @@ export default function App() {
                                 <td className="p-3 text-neutral-900 font-bold">{appt.cliente_nome}</td>
                                 <td className="p-3 text-neutral-800">{appt.profissional_nome}</td>
                                 <td className="p-3 font-bold">{appt.servico_nome}</td>
-                                <td className="p-3 font-extrabold text-[#111]">R$ {appt.servico_preco.toFixed(2)}</td>
+                                <td className="p-3 font-extrabold text-[#111]">R$ {Number(appt.servico_preco || 0).toFixed(2)}</td>
                                 <td className="p-3">
                                   <div className="flex items-center gap-2">
                                     <span className={`inline-block text-[9px] font-extrabold px-2 py-0.5 rounded-md ${
@@ -2513,11 +2513,45 @@ export default function App() {
                             <input
                               type="text"
                               required
+                              list="cargos-existentes"
                               placeholder="Ex: Lash Designer & Cílios"
                               value={newProfForm.especialidade}
                               onChange={e => setNewProfForm({...newProfForm, especialidade: e.target.value})}
                               className="w-full text-xs px-3 py-2 border border-neutral-150 rounded-lg bg-white outline-hidden focus:ring-1 focus:ring-pink-500"
                             />
+                            <datalist id="cargos-existentes">
+                              {(dashboardProfissionais || []).map((p) => (
+                                <option key={p.id} value={p.especialidade} />
+                              ))}
+                            </datalist>
+
+                            {(dashboardProfissionais || []).length > 0 && (
+                              <div className="mt-2 pb-1">
+                                <span className="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">
+                                  Cargos Cadastrados (Clique para Preencher):
+                                </span>
+                                <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
+                                  {(dashboardProfissionais || [])
+                                    .map(p => p.especialidade?.trim())
+                                    .filter((v, i, a) => v && a.indexOf(v) === i)
+                                    .map((spec) => (
+                                      <button
+                                        key={spec}
+                                        type="button"
+                                        onClick={() => setNewProfForm({...newProfForm, especialidade: spec})}
+                                        className={`px-2 py-1 text-[10px] rounded-lg border font-medium transition-all text-left truncate max-w-full cursor-pointer ${
+                                          newProfForm.especialidade === spec
+                                            ? 'bg-pink-50 border-pink-300 text-pink-700 font-bold scale-102'
+                                            : 'bg-white border-neutral-200 text-neutral-600 hover:bg-neutral-50 hover:border-neutral-300'
+                                        }`}
+                                        title={spec}
+                                      >
+                                        {spec}
+                                      </button>
+                                    ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
                           <div>
                             <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">URL da Foto (Opcional)</label>
