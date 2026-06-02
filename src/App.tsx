@@ -231,6 +231,7 @@ export default function App() {
   const [serviceSearch, setServiceSearch] = useState('');
   const [serviceCategory, setServiceCategory] = useState('Todos');
   const [editingService, setEditingService] = useState<any | null>(null);
+  const [editingProduct, setEditingProduct] = useState<any | null>(null);
 
   // Toasts
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -255,7 +256,7 @@ export default function App() {
   const loadStoreData = async () => {
     setLoading(true);
     try {
-      const resp = await fetch('/api/lojas/studio-glamour');
+      const resp = await fetch('/api/lojas/nucleo-autoestima');
       if (resp.ok) {
         const data = await resp.json();
         setSelectedLojaDetail(data);
@@ -744,6 +745,7 @@ export default function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          id: editingProduct ? editingProduct.id : undefined,
           loja_id: 'loja-1',
           nome: newProductForm.nome,
           preco: parseFloat(newProductForm.preco) || 0,
@@ -753,13 +755,18 @@ export default function App() {
         })
       });
       if (resp.ok) {
-        addToast('Produto Adicionado', 'O novo item da Boutique foi cadastrado com sucesso!', 'success');
+        if (editingProduct) {
+          addToast('Produto Atualizado', 'O item da Boutique foi atualizado com sucesso!', 'success');
+          setEditingProduct(null);
+        } else {
+          addToast('Produto Adicionado', 'O novo item da Boutique foi cadastrado com sucesso!', 'success');
+        }
         setNewProductForm({ nome: '', preco: '', estoque: '10', categoria: 'Cílios', imagem: '' });
         loadDashboardData();
         loadStoreData(); // update client view too
       } else {
         const err = await resp.json();
-        alert(err.error || "Erro ao adicionar produto");
+        alert(err.error || "Erro ao salvar produto");
       }
     } catch (e) {
       console.error(e);
@@ -772,12 +779,32 @@ export default function App() {
       const resp = await fetch(`/api/produtos/${id}`, { method: 'DELETE' });
       if (resp.ok) {
         addToast('Produto Removido', 'O item foi retirado do catálogo com sucesso.', 'success');
+        if (editingProduct && editingProduct.id === id) {
+          setEditingProduct(null);
+          setNewProductForm({ nome: '', preco: '', estoque: '10', categoria: 'Cílios', imagem: '' });
+        }
         loadDashboardData();
         loadStoreData(); // update client view too
       }
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const handleStartEditProduct = (prod: any) => {
+    setEditingProduct(prod);
+    setNewProductForm({
+      nome: prod.nome,
+      preco: prod.preco.toString(),
+      estoque: prod.estoque.toString(),
+      categoria: prod.categoria,
+      imagem: prod.imagem || ''
+    });
+  };
+
+  const handleCancelEditProduct = () => {
+    setEditingProduct(null);
+    setNewProductForm({ nome: '', preco: '', estoque: '10', categoria: 'Cílios', imagem: '' });
   };
 
   const handleUpdateStoreSchedule = async (e: React.FormEvent) => {
@@ -2183,7 +2210,7 @@ export default function App() {
                     <div className="md:col-span-4 bg-white border border-neutral-150 p-6 rounded-3xl shadow-xs">
                       <h4 className="font-extrabold text-sm text-neutral-950 flex items-center gap-2 border-b border-neutral-100 pb-3 mb-4">
                         <Package className="w-4 h-4 text-pink-500" />
-                        <span>Cadastrar Item Home Care</span>
+                        <span>{editingProduct ? `Editar: ${editingProduct.nome}` : 'Cadastrar Item Home Care'}</span>
                       </h4>
                       
                       <form onSubmit={handleAddProduct} className="flex flex-col gap-3.5">
@@ -2250,13 +2277,33 @@ export default function App() {
                           />
                         </div>
 
-                        <button
-                          type="submit"
-                          className="w-full py-2 bg-black hover:bg-neutral-900 border border-neutral-800 text-pink-400 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                        >
-                          <Plus className="w-4.5 h-4.5 text-pink-400" />
-                          <span>Adicionar à Boutique</span>
-                        </button>
+                        {editingProduct ? (
+                          <div className="flex gap-2">
+                            <button
+                              type="submit"
+                              className="flex-1 py-2 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer"
+                            >
+                              <Check className="w-4 h-4" />
+                              <span>Salvar Alterações</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleCancelEditProduct}
+                              className="py-2 px-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 rounded-xl transition-all flex items-center justify-center cursor-pointer"
+                              title="Cancelar Edição"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="submit"
+                            className="w-full py-2 bg-black hover:bg-neutral-900 border border-neutral-800 text-pink-400 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <Plus className="w-4.5 h-4.5 text-pink-400" />
+                            <span>Adicionar à Boutique</span>
+                          </button>
+                        )}
                       </form>
                     </div>
 
@@ -2272,7 +2319,7 @@ export default function App() {
                       ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto pr-1">
                           {dashboardProdutos.map((prod) => (
-                            <div key={prod.id} className="p-3 border border-neutral-150 rounded-xl flex gap-3 items-center justify-between bg-[#fcfcfc]">
+                            <div key={prod.id} className="p-3 border border-neutral-150 rounded-xl flex gap-3 items-center justify-between bg-[#fcfcfc] group">
                               <div className="flex items-center gap-2.5 min-w-0">
                                 <img
                                   src={prod.imagem || "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?auto=format&fit=crop&q=80&w=200"}
@@ -2281,20 +2328,29 @@ export default function App() {
                                   referrerPolicy="no-referrer"
                                 />
                                 <div className="min-w-0">
-                                  <span className="text-[8px] bg-neutral-200 text-neutral-600 font-bold px-1.5 py-0.2 rounded uppercase">{prod.categoria}</span>
+                                  <span className="text-[8px] bg-neutral-250 text-neutral-600 font-bold px-1.5 py-0.2 rounded uppercase">{prod.categoria}</span>
                                   <h5 className="font-bold text-neutral-900 text-xs truncate mt-0.5">{prod.nome}</h5>
                                   <p className="text-[10px] text-neutral-500 mt-0.2">Disponível: <b className="text-neutral-750 font-bold">{prod.estoque} un</b></p>
                                 </div>
                               </div>
                               <div className="text-right flex items-center gap-3">
-                                <span className="font-extrabold text-neutral-900 text-xs">R$ {prod.preco.toFixed(2)}</span>
-                                <button
-                                  onClick={() => handleDeleteProduct(prod.id)}
-                                  className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer shrink-0"
-                                  title="Remover Item"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
+                                <span className="font-extrabold text-neutral-900 text-xs shrink-0">R$ {prod.preco.toFixed(2)}</span>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <button
+                                    onClick={() => handleStartEditProduct(prod)}
+                                    className="p-1.5 text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer opacity-70 group-hover:opacity-100"
+                                    title="Editar Item"
+                                  >
+                                    <Edit className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteProduct(prod.id)}
+                                    className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer opacity-70 group-hover:opacity-100"
+                                    title="Remover Item"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           ))}

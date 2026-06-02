@@ -184,6 +184,60 @@
       "duracao": 30,
       "categoria": "Cabelo",
       "imagem": "https://images.unsplash.com/photo-1605497746444-11d361501e52?auto=format&fit=crop&q=80&w=400"
+    },
+    {
+      "id": "serv-9",
+      "loja_id": "loja-1",
+      "nome": "Extensão Fio a Fio Clássico",
+      "preco": 150,
+      "duracao": 90,
+      "categoria": "Cílios",
+      "imagem": "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&q=80&w=400"
+    },
+    {
+      "id": "serv-10",
+      "loja_id": "loja-1",
+      "nome": "Manicure e Pedicure Conjugada",
+      "preco": 80,
+      "duracao": 60,
+      "categoria": "Unhas",
+      "imagem": "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=400"
+    },
+    {
+      "id": "serv-11",
+      "loja_id": "loja-1",
+      "nome": "Design de Sobrancelhas Simples",
+      "preco": 50,
+      "duracao": 20,
+      "categoria": "Sobrancelha",
+      "imagem": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=400"
+    },
+    {
+      "id": "serv-12",
+      "loja_id": "loja-1",
+      "nome": "Terapia Capilar Regenerativa",
+      "preco": 195,
+      "duracao": 75,
+      "categoria": "Cabelo",
+      "imagem": "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80&w=400"
+    },
+    {
+      "id": "serv-13",
+      "loja_id": "loja-1",
+      "nome": "Limpeza de Pele Profunda",
+      "preco": 140,
+      "duracao": 90,
+      "categoria": "Estética",
+      "imagem": "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&q=80&w=400"
+    },
+    {
+      "id": "serv-14",
+      "loja_id": "loja-1",
+      "nome": "Massagem Facial Relaxante",
+      "preco": 95,
+      "duracao": 45,
+      "categoria": "Estética",
+      "imagem": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&q=80&w=400"
     }
   ],
   "produtos": [
@@ -220,6 +274,42 @@
       "nome": "Leave-In Macadâmia Termoactive",
       "preco": 95.0,
       "estoque": 8,
+      "categoria": "Cabelo",
+      "imagem": "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&q=80&w=200"
+    },
+    {
+      "id": "prod-5",
+      "loja_id": "loja-1",
+      "nome": "Kit Home Care Manutenção de Cílios",
+      "preco": 49.9,
+      "estoque": 20,
+      "categoria": "Cílios",
+      "imagem": "https://images.unsplash.com/photo-1626015829430-7987c4ea92fb?auto=format&fit=crop&q=80&w=200"
+    },
+    {
+      "id": "prod-6",
+      "loja_id": "loja-1",
+      "nome": "Creme Hidratante para Mãos Orquídea",
+      "preco": 42.0,
+      "estoque": 18,
+      "categoria": "Unhas",
+      "imagem": "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&q=80&w=200"
+    },
+    {
+      "id": "prod-7",
+      "loja_id": "loja-1",
+      "nome": "Sabonete Líquido Micelar Lash Cleanser",
+      "preco": 38.5,
+      "estoque": 12,
+      "categoria": "Cílios",
+      "imagem": "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&q=80&w=200"
+    },
+    {
+      "id": "prod-8",
+      "loja_id": "loja-1",
+      "nome": "Máscara de Nutrição Capilar Caviar",
+      "preco": 120.0,
+      "estoque": 6,
       "categoria": "Cabelo",
       "imagem": "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&q=80&w=200"
     }
