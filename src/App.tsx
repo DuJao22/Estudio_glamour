@@ -45,7 +45,310 @@ import NotificationToast, { ToastMessage } from './components/NotificationToast'
 import PixPaymentModal from './components/PixPaymentModal';
 import { Usuario, Loja, Profissional, Servico, Agendamento, Produto } from './types';
 
+// --- GLOBAL RESILIENT FETCH INTERCEPTOR FOR STATIC HOSTING DEPLOYMENTS (Vercel/Offline) ---
+const LOCAL_DB_KEY = "NUCLEO_AUTOESTIMA_OFFLINE_DB_V4";
+
+const getOfflineDB = () => {
+  try {
+    const saved = typeof window !== "undefined" ? localStorage.getItem(LOCAL_DB_KEY) : null;
+    if (saved) return JSON.parse(saved);
+  } catch (e) {
+    console.error(e);
+  }
+  return {
+    usuarios: [
+      { id: "user-super-admin-1", nome: "Laura Fernanda (Super Admin)", email: "laura@autoestima.com", senha: "super", tipo: "super_admin", loja_id: "loja-1" },
+      { id: "user-dono-1", nome: "Grazi Sabrina (Dona)", email: "grazi@autoestima.com", senha: "grazi", tipo: "dono", loja_id: "loja-1" },
+      { id: "user-prof-1", nome: "Laura Fernanda", email: "laura@autoestima.com", senha: "laura", tipo: "profissional", loja_id: "loja-1", profissional_id: "prof-1" },
+      { id: "user-prof-2", nome: "Grazi Sabrina", email: "grazi@autoestima.com", senha: "grazi", tipo: "profissional", loja_id: "loja-1", profissional_id: "prof-2" },
+      { id: "user-prof-3", nome: "Juliana Mendes", email: "ju@autoestima.com", senha: "ju", tipo: "profissional", loja_id: "loja-1", profissional_id: "prof-3" },
+      { id: "user-prof-4", nome: "Camila Rocha", email: "camila@autoestima.com", senha: "camila", tipo: "profissional", loja_id: "loja-1", profissional_id: "prof-4" },
+      { id: "user-cliente-1", nome: "Mariana Santos", email: "mari@cliente.com", senha: "mari", tipo: "cliente" }
+    ],
+    lojas: [
+      {
+        id: "loja-1",
+        nome: "Núcleo de Autoestima",
+        endereco: "Rua Rio Tibre, 291 - Novo Riacho, Contagem - MG",
+        telefone: "(31) 99296-5461 / (31) 98693-9893",
+        horario_funcionamento: { inicio: "08:00", fim: "18:00", intervalo_inicio: "11:40", intervalo_fim: "13:40", split_shift_enabled: true },
+        slug: "nucleo-autoestima",
+        imagem: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=400",
+        servicos_populares: ["Extensão de Cílios Lash", "Alongamento em Fibra de Vidro", "Design de Sobrancelhas"],
+        instagram: "studio_grazisabrina1"
+      }
+    ],
+    profissionais: [
+      { id: "prof-1", loja_id: "loja-1", nome: "Laura Fernanda", especialidade: "Designer de Cílios & Lash Designer (@laurafernanda_lash)", foto: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150" },
+      { id: "prof-2", loja_id: "loja-1", nome: "Grazi Sabrina", especialidade: "Unhas, Designer de Sobrancelha & Estética (@studio_grazisabrina1)", foto: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=150" },
+      { id: "prof-3", loja_id: "loja-1", nome: "Juliana Mendes", especialidade: "Design de Sobrancelha & Autoestima Coparceiro", foto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150" },
+      { id: "prof-4", loja_id: "loja-1", nome: "Camila Rocha", especialidade: "Cabeleireira & Terapia Capilar", foto: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150" }
+    ],
+    servicos: [
+      { id: "serv-1", loja_id: "loja-1", nome: "Alongamento em Fibra de Vidro", preco: 180, duracao: 90, categoria: "Unhas", imagem: "https://images.unsplash.com/photo-1604654894610-df490651e56c?auto=format&fit=crop&q=80&w=400" },
+      { id: "serv-2", loja_id: "loja-1", nome: "Esmaltação em Gel", preco: 90, duracao: 45, categoria: "Unhas", imagem: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=400" },
+      { id: "serv-3", loja_id: "loja-1", nome: "Extensão Volume Russo", preco: 220, duracao: 120, categoria: "Cílios", imagem: "https://images.unsplash.com/photo-1582966772680-860e372bb558?auto=format&fit=crop&q=80&w=400" },
+      { id: "serv-4", loja_id: "loja-1", nome: "Lash Lifting Premium", preco: 130, duracao: 60, categoria: "Cílios", imagem: "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&q=80&w=400" },
+      { id: "serv-5", loja_id: "loja-1", nome: "Design com Henna e Epilação", preco: 75, duracao: 30, categoria: "Sobrancelha", imagem: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=400" },
+      { id: "serv-6", loja_id: "loja-1", nome: "Brown Lamination", preco: 110, duracao: 45, categoria: "Sobrancelha", imagem: "https://images.unsplash.com/photo-1626015829430-7987c4ea92fb?auto=format&fit=crop&q=80&w=400" },
+      { id: "serv-7", loja_id: "loja-1", nome: "Corte Design Feminino + Lavação", preco: 160, duracao: 60, categoria: "Cabelo", imagem: "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80&w=400" },
+      { id: "serv-8", loja_id: "loja-1", nome: "Escova Modeladora & Autoestima", preco: 85, duracao: 30, categoria: "Cabelo", imagem: "https://images.unsplash.com/photo-1605497746444-11d361501e52?auto=format&fit=crop&q=80&w=400" },
+      { id: "serv-9", loja_id: "loja-1", nome: "Extensão Fio a Fio Clássico", preco: 150, duracao: 90, categoria: "Cílios", imagem: "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&q=80&w=400" },
+      { id: "serv-10", loja_id: "loja-1", nome: "Manicure e Pedicure Conjugada", preco: 80, duracao: 60, categoria: "Unhas", imagem: "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=400" },
+      { id: "serv-11", loja_id: "loja-1", nome: "Design de Sobrancelhas Simples", preco: 50, duracao: 20, categoria: "Sobrancelha", imagem: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=400" },
+      { id: "serv-12", loja_id: "loja-1", nome: "Terapia Capilar Regenerativa", preco: 195, duracao: 75, categoria: "Cabelo", imagem: "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80&w=400" },
+      { id: "serv-13", loja_id: "loja-1", nome: "Limpeza de Pele Profunda", preco: 140, duracao: 90, categoria: "Estética", imagem: "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&q=80&w=400" },
+      { id: "serv-14", loja_id: "loja-1", nome: "Massagem Facial Relaxante", preco: 95, duracao: 45, categoria: "Estética", imagem: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&q=80&w=400" }
+    ],
+    produtos: [
+      { id: "prod-1", loja_id: "loja-1", nome: "Sérum Nutritivo Pro-Growth Lash", preco: 79.9, estoque: 15, categoria: "Cílios", imagem: "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?auto=format&fit=crop&q=80&w=200" },
+      { id: "prod-2", loja_id: "loja-1", nome: "Óleo Fortalecedor de Unhas Melaleuca", preco: 34.9, estoque: 24, categoria: "Unhas", imagem: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80&w=200" },
+      { id: "prod-3", loja_id: "loja-1", nome: "Glow Oil Lamination Finisher", preco: 58.0, estoque: 10, categoria: "Sobrancelha", imagem: "https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&q=80&w=200" },
+      { id: "prod-4", loja_id: "loja-1", nome: "Leave-In Macadâmia Termoactive", preco: 95.0, estoque: 8, categoria: "Cabelo", imagem: "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&q=80&w=200" },
+      { id: "prod-5", loja_id: "loja-1", nome: "Kit Home Care Manutenção de Cílios", preco: 49.9, estoque: 20, categoria: "Cílios", imagem: "https://images.unsplash.com/photo-1626015829430-7987c4ea92fb?auto=format&fit=crop&q=80&w=200" },
+      { id: "prod-6", loja_id: "loja-1", nome: "Creme Hidratante para Mãos Orquídea", preco: 42.0, estoque: 18, categoria: "Unhas", imagem: "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&q=80&w=200" },
+      { id: "prod-7", loja_id: "loja-1", nome: "Sabonete Líquido Micelar Lash Cleanser", preco: 38.5, estoque: 12, categoria: "Cílios", imagem: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&q=80&w=200" },
+      { id: "prod-8", loja_id: "loja-1", nome: "Máscara de Nutrição Capilar Caviar", preco: 120.0, estoque: 6, categoria: "Cabelo", imagem: "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&q=80&w=200" }
+    ],
+    agendamentos: [
+      { id: "agend-1", cliente_id: "user-cliente-1", profissional_id: "prof-1", servico_id: "serv-2", loja_id: "loja-1", data_hora: "2026-05-28 10:00", status: "confirmado" },
+      { id: "agend-2", cliente_id: "user-cliente-1", profissional_id: "prof-2", servico_id: "serv-3", loja_id: "loja-1", data_hora: "2026-05-28 14:30", status: "confirmado" }
+    ]
+  };
+};
+
+const saveOfflineDB = (db: any) => {
+  try {
+    localStorage.setItem(LOCAL_DB_KEY, JSON.stringify(db));
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+const handleClientSideMock = async (url: string, init?: RequestInit): Promise<Response> => {
+  const db = getOfflineDB();
+  const cleanUrl = url.split("?")[0];
+  const params = new URLSearchParams(url.includes("?") ? url.split("?")[1] : "");
+  const method = init?.method?.toUpperCase() || "GET";
+  const bodyObj = init?.body && typeof init.body === "string" ? JSON.parse(init.body) : null;
+
+  let resData: any = null;
+  let resStatus = 200;
+
+  if (cleanUrl.match(/\/api\/lojas\/[a-zA-Z0-9_-]+$/)) {
+    const slugOrId = cleanUrl.split("/").pop();
+    const store = db.lojas.find((l: any) => l.slug === slugOrId || l.id === slugOrId) || db.lojas[0];
+    const servicos = db.servicos.filter((s: any) => s.loja_id === store.id);
+    const profissionais = db.profissionais.filter((p: any) => p.loja_id === store.id);
+    resData = { loja: store, servicos, profissionais };
+  } else if (cleanUrl.endsWith("/api/lojas")) {
+    if (method === "POST" && bodyObj) {
+      const idx = db.lojas.findIndex((l: any) => l.id === bodyObj.id || l.slug === bodyObj.slug);
+      if (idx >= 0) {
+        db.lojas[idx] = { ...db.lojas[idx], ...bodyObj };
+      } else {
+        db.lojas.push(bodyObj);
+      }
+      saveOfflineDB(db);
+      resData = { success: true, loja: bodyObj };
+    } else {
+      resData = db.lojas;
+    }
+  } else if (cleanUrl.endsWith("/api/produtos")) {
+    if (method === "GET") {
+      const storeId = params.get("loja_id") || "loja-1";
+      resData = db.produtos.filter((p: any) => p.loja_id === storeId);
+    } else if (method === "POST" && bodyObj) {
+      if (bodyObj.id) {
+        const idx = db.produtos.findIndex((p: any) => p.id === bodyObj.id);
+        if (idx >= 0) db.produtos[idx] = { ...db.produtos[idx], ...bodyObj };
+      } else {
+        const newProd = { ...bodyObj, id: `prod-${Date.now()}` };
+        db.produtos.push(newProd);
+        resData = newProd;
+      }
+      saveOfflineDB(db);
+      resData = resData || bodyObj;
+    }
+  } else if (cleanUrl.match(/\/api\/produtos\/[a-zA-Z0-9_-]+$/)) {
+    if (method === "DELETE") {
+      const prodId = cleanUrl.split("/").pop();
+      db.produtos = db.produtos.filter((p: any) => p.id !== prodId);
+      saveOfflineDB(db);
+      resData = { message: "Produto removido com sucesso" };
+    }
+  } else if (cleanUrl.endsWith("/api/servicos")) {
+    if (method === "GET") {
+      const storeId = params.get("loja_id") || "loja-1";
+      resData = db.servicos.filter((s: any) => s.loja_id === storeId);
+    } else if (method === "POST" && bodyObj) {
+      if (bodyObj.id) {
+        const idx = db.servicos.findIndex((s: any) => s.id === bodyObj.id);
+        if (idx >= 0) db.servicos[idx] = { ...db.servicos[idx], ...bodyObj };
+      } else {
+        const newServ = { ...bodyObj, id: `serv-${Date.now()}` };
+        db.servicos.push(newServ);
+        resData = newServ;
+      }
+      saveOfflineDB(db);
+      resData = resData || bodyObj;
+    }
+  } else if (cleanUrl.match(/\/api\/servicos\/[a-zA-Z0-9_-]+$/)) {
+    if (method === "DELETE") {
+      const servId = cleanUrl.split("/").pop();
+      db.servicos = db.servicos.filter((s: any) => s.id !== servId);
+      saveOfflineDB(db);
+      resData = { message: "Serviço deletado com sucesso" };
+    }
+  } else if (cleanUrl.endsWith("/api/profissionais")) {
+    if (method === "GET") {
+      const storeId = params.get("loja_id") || "loja-1";
+      resData = db.profissionais.filter((p: any) => p.loja_id === storeId);
+    } else if (method === "POST" && bodyObj) {
+      if (bodyObj.id) {
+        const idx = db.profissionais.findIndex((p: any) => p.id === bodyObj.id);
+        if (idx >= 0) db.profissionais[idx] = { ...db.profissionais[idx], ...bodyObj };
+      } else {
+        const newProf = { ...bodyObj, id: `prof-${Date.now()}` };
+        db.profissionais.push(newProf);
+        resData = newProf;
+      }
+      saveOfflineDB(db);
+      resData = resData || bodyObj;
+    }
+  } else if (cleanUrl.match(/\/api\/profissionais\/[a-zA-Z0-9_-]+$/)) {
+    if (method === "DELETE") {
+      const profId = cleanUrl.split("/").pop();
+      db.profissionais = db.profissionais.filter((p: any) => p.id !== profId);
+      saveOfflineDB(db);
+      resData = { message: "Profissional deletado com sucesso" };
+    }
+  } else if (cleanUrl.endsWith("/api/agendamentos")) {
+    if (method === "GET") {
+      const storeId = params.get("loja_id");
+      const profId = params.get("profissional_id");
+      const clientId = params.get("cliente_id");
+
+      let items = db.agendamentos;
+      if (storeId) items = items.filter((a: any) => a.loja_id === storeId);
+      if (profId) items = items.filter((a: any) => a.profissional_id === profId);
+      if (clientId) items = items.filter((a: any) => a.cliente_id === clientId);
+      resData = items;
+    } else if (method === "POST" && bodyObj) {
+      if (bodyObj.id) {
+        const idx = db.agendamentos.findIndex((a: any) => a.id === bodyObj.id);
+        if (idx >= 0) db.agendamentos[idx] = { ...db.agendamentos[idx], ...bodyObj };
+      } else {
+        const newAgend = { ...bodyObj, id: `agend-${Date.now()}` };
+        db.agendamentos.push(newAgend);
+        resData = newAgend;
+      }
+      saveOfflineDB(db);
+      resData = resData || bodyObj;
+    }
+  } else if (cleanUrl.match(/\/api\/agendamentos\/[a-zA-Z0-9_-]+\/status$/)) {
+    const parts = cleanUrl.split("/");
+    const agendId = parts[3];
+    const idx = db.agendamentos.findIndex((a: any) => a.id === agendId);
+    if (idx >= 0 && bodyObj && bodyObj.status) {
+      db.agendamentos[idx].status = bodyObj.status;
+      saveOfflineDB(db);
+      resData = db.agendamentos[idx];
+    } else {
+      resStatus = 404;
+      resData = { error: "Agendamento não encontrado" };
+    }
+  } else if (cleanUrl.match(/\/api\/agendamentos\/[a-zA-Z0-9_-]+$/)) {
+    if (method === "DELETE") {
+      const agendId = cleanUrl.split("/").pop();
+      db.agendamentos = db.agendamentos.filter((a: any) => a.id !== agendId);
+      saveOfflineDB(db);
+      resData = { message: "Agendamento cancelado" };
+    }
+  } else if (cleanUrl.endsWith("/api/login")) {
+    if (method === "POST" && bodyObj) {
+      const user = db.usuarios.find((u: any) => u.email === bodyObj.email && u.senha === bodyObj.senha);
+      if (user) {
+        resData = { success: true, user };
+      } else {
+        resStatus = 401;
+        resData = { error: "E-mail ou senha incorretos." };
+      }
+    }
+  } else if (cleanUrl.endsWith("/api/register")) {
+    if (method === "POST" && bodyObj) {
+      const exists = db.usuarios.some((u: any) => u.email === bodyObj.email);
+      if (exists) {
+        resStatus = 400;
+        resData = { error: "E-mail já cadastrado." };
+      } else {
+        const newUser = { ...bodyObj, id: `user-${Date.now()}` };
+        db.usuarios.push(newUser);
+        saveOfflineDB(db);
+        resData = { success: true, user: newUser };
+      }
+    }
+  } else {
+    resStatus = 404;
+    resData = { error: "Not Found client-side route fallback" };
+  }
+
+  return new Response(JSON.stringify(resData), {
+    status: resStatus,
+    headers: { "Content-Type": "application/json" }
+  });
+};
+
+export const resilientFetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+  if (typeof window === "undefined") {
+    return new Response(JSON.stringify({ error: "Server-side context" }), { status: 500 });
+  }
+  const urlStr = typeof input === "string" ? input : (input instanceof URL ? input.toString() : (input as any).url || "");
+
+  if (urlStr.includes("/api/")) {
+    try {
+      const response = await window.fetch(input, init);
+      const contentType = response.headers.get("content-type") || "";
+      if (response.ok) {
+        if (contentType.includes("application/json")) {
+          try {
+            const clone = response.clone();
+            const freshData = await clone.json();
+            const offlineDB = getOfflineDB();
+            if (urlStr.includes("/api/lojas/nucleo-autoestima")) {
+              if (freshData?.loja) offlineDB.lojas[0] = freshData.loja;
+              if (freshData?.servicos) offlineDB.servicos = freshData.servicos;
+              if (freshData?.profissionais) offlineDB.profissionais = freshData.profissionais;
+              saveOfflineDB(offlineDB);
+            } else if (urlStr.includes("/api/produtos?loja_id=")) {
+              if (Array.isArray(freshData)) {
+                offlineDB.produtos = freshData;
+                saveOfflineDB(offlineDB);
+              }
+            }
+          } catch (e) {
+            // Ignore cloning error
+          }
+          return response;
+        }
+        if (contentType.includes("text/html")) {
+          throw new Error("API returned SPA HTML fallback instead of JSON");
+        }
+      }
+
+      throw new Error(`Non-ok or HTML API response status: ${response.status}`);
+    } catch (err) {
+      console.warn(`Resilient mode activated for: ${urlStr}. Error:`, err);
+      return handleClientSideMock(urlStr, init);
+    }
+  }
+
+  return window.fetch(input, init);
+};
+
 export default function App() {
+  // Overrides the standard global fetch name locally in our component block scope
+  const fetch = resilientFetch;
   // Navigation / Views state: only single active store detail and dashboard
   const [currentView, setCurrentView] = useState<'store-detail' | 'dashboard'>('store-detail');
   
@@ -903,14 +1206,14 @@ export default function App() {
                 Olá, {currentUser.nome.split(' ')[0]}
               </span>
               <a
-                href="https://instagram.com/layon.dev"
+                href={`https://instagram.com/${selectedLojaDetail?.loja?.instagram || "studio_grazisabrina1"}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 px-2 py-1.5 sm:px-3 sm:py-1.5 bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 hover:scale-102 hover:opacity-95 text-white text-[10px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all shadow-sm shrink-0"
-                title="Siga @layon.dev no Instagram"
+                title={`Siga @${selectedLojaDetail?.loja?.instagram || "studio_grazisabrina1"} no Instagram`}
               >
                 <Instagram className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">@layon.dev</span>
+                <span className="hidden sm:inline">@{selectedLojaDetail?.loja?.instagram || "studio_grazisabrina1"}</span>
               </a>
               <button
                 onClick={handleLogout}
@@ -923,14 +1226,14 @@ export default function App() {
           ) : (
             <div className="flex items-center gap-1.5 sm:gap-2 pl-1.5 sm:pl-2 border-l border-neutral-200 shrink-0">
               <a
-                href="https://instagram.com/layon.dev"
+                href={`https://instagram.com/${selectedLojaDetail?.loja?.instagram || "studio_grazisabrina1"}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 px-2 py-1.5 sm:px-3 sm:py-2 bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 hover:scale-102 hover:opacity-95 text-white text-[10px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all shadow-sm text-center shrink-0"
-                title="Siga @layon.dev no Instagram"
+                title={`Siga @${selectedLojaDetail?.loja?.instagram || "studio_grazisabrina1"} no Instagram`}
               >
                 <Instagram className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">@layon.dev</span>
+                <span className="hidden sm:inline">@{selectedLojaDetail?.loja?.instagram || "studio_grazisabrina1"}</span>
               </a>
               <button
                 onClick={() => {
