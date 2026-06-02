@@ -18,6 +18,7 @@ import {
   Activity,
   Plus,
   Trash2,
+  Edit,
   Lock,
   MessageSquare,
   LogOut,
@@ -226,6 +227,11 @@ export default function App() {
   const [newServiceForm, setNewServiceForm] = useState({ nome: '', preco: '', duracao: '30', categoria: 'Unhas', imagem: '' });
   const [newProfForm, setNewProfForm] = useState({ nome: '', especialidade: '', foto: '' });
 
+  // Catalog search and filter
+  const [serviceSearch, setServiceSearch] = useState('');
+  const [serviceCategory, setServiceCategory] = useState('Todos');
+  const [editingService, setEditingService] = useState<any | null>(null);
+
   // Toasts
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
@@ -419,19 +425,25 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...newServiceForm,
+          id: editingService ? editingService.id : undefined,
           loja_id: 'loja-1',
           preco: parseFloat(newServiceForm.preco)
         })
       });
 
       if (resp.ok) {
-        addToast('Serviço adicionado', 'O catálogo de beleza foi atualizado com sucesso', 'success');
+        if (editingService) {
+          addToast('Serviço atualizado', 'O procedimento foi atualizado com sucesso.', 'success');
+          setEditingService(null);
+        } else {
+          addToast('Serviço adicionado', 'O catálogo de beleza foi atualizado com sucesso', 'success');
+        }
         setNewServiceForm({ nome: '', preco: '', duracao: '30', categoria: 'Unhas', imagem: '' });
         loadStoreData(); // Refresh consumer view
         loadDashboardData();
       } else {
         const err = await resp.json();
-        alert(err.error || "Erro ao adicionar");
+        alert(err.error || "Erro ao salvar");
       }
     } catch (e) {
       console.error(e);
@@ -444,12 +456,32 @@ export default function App() {
       const resp = await fetch(`/api/servicos/${id}`, { method: 'DELETE' });
       if (resp.ok) {
         addToast('Serviço removido', 'O item foi deletado com sucesso do Studio.', 'success');
+        if (editingService && editingService.id === id) {
+          setEditingService(null);
+          setNewServiceForm({ nome: '', preco: '', duracao: '30', categoria: 'Unhas', imagem: '' });
+        }
         loadStoreData(); // Refresh consumer view
         loadDashboardData();
       }
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const handleStartEditService = (serv: Servico) => {
+    setEditingService(serv);
+    setNewServiceForm({
+      nome: serv.nome,
+      preco: serv.preco.toString(),
+      duracao: serv.duracao.toString(),
+      categoria: serv.categoria,
+      imagem: serv.imagem || ''
+    });
+  };
+
+  const handleCancelEditService = () => {
+    setEditingService(null);
+    setNewServiceForm({ nome: '', preco: '', duracao: '30', categoria: 'Unhas', imagem: '' });
   };
 
   const handleAddProf = async (e: React.FormEvent) => {
@@ -1173,123 +1205,179 @@ export default function App() {
                     </p>
                   </div>
 
-                  {selectedLojaDetail.servicos.length === 0 ? (
-                    <div className="py-12 bg-white/50 border border-dashed rounded-2xl text-center text-neutral-500 text-sm">
-                      Nenhum serviço disponível no momento para esta loja.
+                  {/* Search and Category Filter Section */}
+                  <div className="bg-white border border-neutral-150 p-4 rounded-3xl shadow-xs flex flex-col gap-3 mb-6">
+                    <div className="relative">
+                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                      <input
+                        type="text"
+                        placeholder="Buscar por procedimento ou categoria (ex: Cílios, Unhas, Design...)"
+                        value={serviceSearch}
+                        onChange={(e) => setServiceSearch(e.target.value)}
+                        className="w-full text-xs pl-10 pr-4 py-2.5 border border-neutral-150 rounded-2xl bg-[#fafafa] focus:ring-1 focus:ring-pink-500 outline-hidden font-medium"
+                      />
+                      {serviceSearch && (
+                        <button
+                          onClick={() => setServiceSearch('')}
+                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400 hover:text-neutral-700 cursor-pointer"
+                        >
+                          Limpar
+                        </button>
+                      )}
                     </div>
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      {selectedLojaDetail.servicos.map((service, idx) => {
-                        // Custom professional beauty taglines dynamically assigned for maximum trigger desire
-                        let beautyTagline = "✦ Acabamento Exclusivo Elite";
-                        let beautySpecList = "";
-                        if (service.categoria === "Unhas") {
-                          beautyTagline = "💅 Alinhamento em Gel & Fibra Portuguesa";
-                          beautySpecList = "Gel Vòlia • Alongamento Ultrafino • 100% Higienizado • Cabine UV Selada";
-                        } else if (service.categoria === "Cílios") {
-                          beautyTagline = "✨ Isolamento Fio a Fio com Retenção Máxima";
-                          beautySpecList = "Adesivo Elite • Espessura Premium Matte • Curvatura Soft • Zero Peso nos Olhos";
-                        } else if (service.categoria === "Sobrancelha") {
-                          beautyTagline = "📐 Design Geométrico & Harmonia Facial";
-                          beautySpecList = "Mapeamento Dourado • Henna Importada • Epilação de Precisão • Acabamento Glow";
-                        } else if (service.categoria === "Cabelo") {
-                          beautyTagline = "💇‍♀️ Reconstrução Capilar Termo-Ativa";
-                          beautySpecList = "Therapy Nutrição • Brilho Gloss Radiante • Secagem Modelada Sênior";
-                        } else if (service.categoria === "Estética" || service.categoria === "Estética / Spa") {
-                          beautyTagline = "🌸 Revitalização & Drenagem Dermo-Ativa";
-                          beautySpecList = "Ativos Orgânicos • Alinhamento Linfático • Toque Relaxante Terapêutico";
-                        }
-
-                        const cardIsSelected = bookingService?.id === service.id;
-
+                    
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar -mx-1 px-1">
+                      {["Todos", "Unhas", "Cílios", "Sobrancelha", "Cabelo", "Estética"].map((cat) => {
+                        const isActive = serviceCategory === cat;
                         return (
-                          <motion.div
-                            key={service.id}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, margin: "-50px" }}
-                            transition={{ duration: 0.5, delay: idx * 0.05, ease: "easeOut" }}
-                            whileHover={{ y: -6, scale: 1.015 }}
-                            onClick={() => {
-                              triggerOpenBooking(service);
-                              // Smooth scroll to scheduling Lounge on mobile device
-                              const target = document.getElementById('booking-lounge');
-                              if (target) {
-                                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                              }
-                            }}
-                            className={`group relative overflow-hidden bg-white rounded-3xl border transition-all duration-300 cursor-pointer flex flex-col justify-between ${
-                              cardIsSelected 
-                                ? 'border-pink-500 ring-2 ring-pink-500/20 shadow-pink-100 shadow-xl' 
-                                : 'border-neutral-150 shadow-md hover:shadow-xl hover:border-pink-300'
+                          <button
+                            key={cat}
+                            onClick={() => setServiceCategory(cat)}
+                            className={`px-3.5 py-1.5 rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap border ${
+                              isActive
+                                ? 'bg-black border-black text-pink-400 font-extrabold shadow-sm'
+                                : 'bg-neutral-50 hover:bg-neutral-100 border-neutral-200 text-neutral-500'
                             }`}
                           >
-                            
-                            {/* Decorative shiny reflective gradient bar on hover */}
-                            <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-pink-400 via-pink-600 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
-
-                            {/* Upper Half: Grand Visual Photo with elegant overlay */}
-                            <div className="relative h-44 overflow-hidden bg-neutral-100 shrink-0">
-                              <img
-                                src={service.imagem || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=400"}
-                                alt={service.nome}
-                                className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-700 ease-out"
-                                referrerPolicy="no-referrer"
-                              />
-                              
-                              {/* Dark subtle gradient overlay to support text reading */}
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent" />
-
-                              {/* Price Badge over Image */}
-                              <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-md text-white px-3.5 py-1.5 rounded-2xl border border-white/10 font-black text-sm shadow-md">
-                                R$ {service.preco.toFixed(2)}
-                              </div>
-
-                              {/* Category Pill over Image */}
-                              <div className="absolute top-3 left-3 flex gap-1.5 items-center">
-                                <span className="text-[9px] font-black uppercase tracking-widest bg-pink-600 text-white px-3 py-1 rounded-md border border-pink-500/35 shadow-sm">
-                                  {service.categoria}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Lower Half: Copy persuasive descriptive section with high salon detail */}
-                            <div className="p-5 flex-1 flex flex-col justify-between">
-                              <div>
-                                <h4 className="font-extrabold text-base text-neutral-950 leading-snug group-hover:text-pink-700 transition-colors">
-                                  {service.nome}
-                                </h4>
-                                
-                                <p className="text-[11px] text-pink-700 font-bold mt-1.5">
-                                  {beautyTagline}
-                                </p>
-                                
-                                <p className="text-[10px] text-neutral-400 mt-1 font-mono tracking-tight leading-relaxed">
-                                  {beautySpecList}
-                                </p>
-                              </div>
-
-                              {/* Duration / Action block */}
-                              <div className="border-t border-neutral-100 mt-4 pt-3 flex items-center justify-between">
-                                <span className="flex items-center gap-1 font-bold text-neutral-500 bg-neutral-100 px-2 py-1 rounded-lg text-[10px]">
-                                  <Clock className="w-3.5 h-3.5 text-neutral-400" />
-                                  {service.duracao} minutos
-                                </span>
-
-                                <span className={`text-xs font-black transition-all flex items-center gap-1 ${
-                                  cardIsSelected ? 'text-pink-600 font-extrabold' : 'text-black group-hover:text-pink-600'
-                                }`}>
-                                  <span>{cardIsSelected ? 'Selecionado ✨' : 'Reservar Vaga'}</span>
-                                  <ChevronRight className={`w-3.5 h-3.5 transition-transform ${cardIsSelected ? 'translate-x-1 text-pink-500' : 'group-hover:translate-x-1'}`} />
-                                </span>
-                              </div>
-                            </div>
-
-                          </motion.div>
+                            {cat}
+                          </button>
                         );
                       })}
                     </div>
-                  )}
+                  </div>
+
+                  {(() => {
+                    const filtered = selectedLojaDetail.servicos.filter(service => {
+                      const matchesSearch = service.nome.toLowerCase().includes(serviceSearch.toLowerCase()) ||
+                                            service.categoria.toLowerCase().includes(serviceSearch.toLowerCase());
+                      const matchesCategory = serviceCategory === 'Todos' || service.categoria === serviceCategory;
+                      return matchesSearch && matchesCategory;
+                    });
+
+                    if (filtered.length === 0) {
+                      return (
+                        <div className="py-12 bg-white/50 border border-neutral-150 border-dashed rounded-3xl text-center text-neutral-500 text-xs">
+                          {serviceSearch || serviceCategory !== 'Todos' 
+                            ? "Nenhum procedimento encontrado com os filtros aplicados." 
+                            : "Nenhum serviço disponível no momento para esta loja."}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        {filtered.map((service, idx) => {
+                          // Custom professional beauty taglines dynamically assigned for maximum trigger desire
+                          let beautyTagline = "✦ Acabamento Exclusivo Elite";
+                          let beautySpecList = "";
+                          if (service.categoria === "Unhas") {
+                            beautyTagline = "💅 Alinhamento em Gel & Fibra Portuguesa";
+                            beautySpecList = "Gel Vòlia • Alongamento Ultrafino • 100% Higienizado • Cabine UV Selada";
+                          } else if (service.categoria === "Cílios") {
+                            beautyTagline = "✨ Isolamento Fio a Fio com Retenção Máxima";
+                            beautySpecList = "Adesivo Elite • Espessura Premium Matte • Curvatura Soft • Zero Peso nos Olhos";
+                          } else if (service.categoria === "Sobrancelha") {
+                            beautyTagline = "📐 Design Geométrico & Harmonia Facial";
+                            beautySpecList = "Mapeamento Dourado • Henna Importada • Epilação de Precisão • Acabamento Glow";
+                          } else if (service.categoria === "Cabelo") {
+                            beautyTagline = "💇‍♀️ Reconstrução Capilar Termo-Ativa";
+                            beautySpecList = "Therapy Nutrição • Brilho Gloss Radiante • Secagem Modelada Sênior";
+                          } else if (service.categoria === "Estética" || service.categoria === "Estética / Spa") {
+                            beautyTagline = "🌸 Revitalização & Drenagem Dermo-Ativa";
+                            beautySpecList = "Ativos Orgânicos • Alinhamento Linfático • Toque Relaxante Terapêutico";
+                          }
+
+                          const cardIsSelected = bookingService?.id === service.id;
+
+                          return (
+                            <motion.div
+                              key={service.id}
+                              initial={{ opacity: 0, y: 30 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              viewport={{ once: true, margin: "-50px" }}
+                              transition={{ duration: 0.5, delay: idx * 0.05, ease: "easeOut" }}
+                              whileHover={{ y: -6, scale: 1.015 }}
+                              onClick={() => {
+                                triggerOpenBooking(service);
+                                // Smooth scroll to scheduling Lounge on mobile device
+                                const target = document.getElementById('booking-lounge');
+                                if (target) {
+                                  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                }
+                              }}
+                              className={`group relative overflow-hidden bg-white rounded-3xl border transition-all duration-300 cursor-pointer flex flex-col justify-between ${
+                                cardIsSelected 
+                                  ? 'border-pink-500 ring-2 ring-pink-500/20 shadow-pink-100 shadow-xl' 
+                                  : 'border-neutral-150 shadow-md hover:shadow-xl hover:border-pink-300'
+                              }`}
+                            >
+                              
+                              {/* Decorative shiny reflective gradient bar on hover */}
+                              <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-pink-400 via-pink-600 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
+
+                              {/* Upper Half: Grand Visual Photo with elegant overlay */}
+                              <div className="relative h-44 overflow-hidden bg-neutral-100 shrink-0">
+                                <img
+                                  src={service.imagem || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=400"}
+                                  alt={service.nome}
+                                  className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-700 ease-out"
+                                  referrerPolicy="no-referrer"
+                                />
+                                
+                                {/* Dark subtle gradient overlay to support text reading */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent" />
+
+                                {/* Price Badge over Image */}
+                                <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-md text-white px-3.5 py-1.5 rounded-2xl border border-white/10 font-black text-sm shadow-md">
+                                  R$ {service.preco.toFixed(2)}
+                                </div>
+
+                                {/* Category Pill over Image */}
+                                <div className="absolute top-3 left-3 flex gap-1.5 items-center">
+                                  <span className="text-[9px] font-black uppercase tracking-widest bg-pink-600 text-white px-3 py-1 rounded-md border border-pink-500/35 shadow-sm">
+                                    {service.categoria}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Lower Half: Copy persuasive descriptive section with high salon detail */}
+                              <div className="p-5 flex-1 flex flex-col justify-between">
+                                <div>
+                                  <h4 className="font-extrabold text-base text-neutral-950 leading-snug group-hover:text-pink-700 transition-colors">
+                                    {service.nome}
+                                  </h4>
+                                  
+                                  <p className="text-[11px] text-pink-700 font-bold mt-1.5">
+                                    {beautyTagline}
+                                  </p>
+                                  
+                                  <p className="text-[10px] text-neutral-400 mt-1 font-mono tracking-tight leading-relaxed">
+                                    {beautySpecList}
+                                  </p>
+                                </div>
+
+                                {/* Duration / Action block */}
+                                <div className="border-t border-neutral-100 mt-4 pt-3 flex items-center justify-between">
+                                  <span className="flex items-center gap-1 font-bold text-neutral-500 bg-neutral-100 px-2 py-1 rounded-lg text-[10px]">
+                                    <Clock className="w-3.5 h-3.5 text-neutral-400" />
+                                    {service.duracao} minutos
+                                  </span>
+
+                                  <span className={`text-xs font-black transition-all flex items-center gap-1 ${
+                                    cardIsSelected ? 'text-pink-600 font-extrabold' : 'text-black group-hover:text-pink-600'
+                                  }`}>
+                                    <span>{cardIsSelected ? 'Selecionado ✨' : 'Reservar Vaga'}</span>
+                                    <ChevronRight className={`w-3.5 h-3.5 transition-transform ${cardIsSelected ? 'translate-x-1 text-pink-500' : 'group-hover:translate-x-1'}`} />
+                                  </span>
+                                </div>
+                              </div>
+
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Visual Boutique Home Care Retail Corner */}
@@ -1860,7 +1948,7 @@ export default function App() {
                       <div className="bg-white border border-neutral-150 p-6 rounded-3xl shadow-xs">
                         <h3 className="font-extrabold text-base text-neutral-950 flex items-center gap-2 border-b border-neutral-100 pb-3 mb-4">
                           <Layers className="w-5 h-5 text-pink-500" />
-                          <span>Gerenciar Catálogo de Procedimentos</span>
+                          <span>{editingService ? `Editar: ${editingService.nome}` : 'Gerenciar Catálogo de Procedimentos'}</span>
                         </h3>
 
                         <form onSubmit={handleAddService} className="grid grid-cols-1 md:grid-cols-12 gap-3 border-b border-neutral-100 pb-5 mb-5 items-end">
@@ -1926,13 +2014,33 @@ export default function App() {
                             />
                           </div>
                           <div className="md:col-span-3">
-                            <button
-                              type="submit"
-                              className="w-full py-2 bg-black hover:bg-neutral-900 border border-neutral-800 text-pink-400 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer"
-                            >
-                              <Plus className="w-4 h-4 text-pink-400" />
-                              <span>Adicionar</span>
-                            </button>
+                            {editingService ? (
+                              <div className="flex gap-2">
+                                <button
+                                  type="submit"
+                                  className="flex-1 py-1.5 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer"
+                                >
+                                  <Check className="w-3.5 h-3.5" />
+                                  <span>Salvar</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={handleCancelEditService}
+                                  className="py-1.5 px-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 rounded-xl transition-all flex items-center justify-center cursor-pointer"
+                                  title="Cancelar Edição"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                type="submit"
+                                className="w-full py-2 bg-black hover:bg-neutral-900 border border-neutral-800 text-pink-400 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer"
+                              >
+                                <Plus className="w-4 h-4 text-pink-400" />
+                                <span>Adicionar</span>
+                              </button>
+                            )}
                           </div>
                         </form>
 
@@ -1957,13 +2065,22 @@ export default function App() {
                                     <span className="text-xs text-neutral-400 block sm:inline sm:ml-3">({serv.duracao} m • R$ {serv.preco.toFixed(2)})</span>
                                   </div>
                                 </div>
-                                <button
-                                  onClick={() => handleDeleteService(serv.id)}
-                                  className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer opacity-70 group-hover:opacity-100 shrink-0"
-                                  title="Remover Procedimento"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    onClick={() => handleStartEditService(serv)}
+                                    className="p-1.5 text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer opacity-70 group-hover:opacity-100 shrink-0"
+                                    title="Editar Procedimento"
+                                  >
+                                    <Edit className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteService(serv.id)}
+                                    className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer opacity-70 group-hover:opacity-100 shrink-0"
+                                    title="Remover Procedimento"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
                               </div>
                             ))}
                           </div>
