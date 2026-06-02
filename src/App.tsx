@@ -248,13 +248,31 @@ const handleClientSideMock = async (url: string, init?: RequestInit): Promise<Re
       if (storeId) items = items.filter((a: any) => a.loja_id === storeId);
       if (profId) items = items.filter((a: any) => a.profissional_id === profId);
       if (clientId) items = items.filter((a: any) => a.cliente_id === clientId);
-      resData = items;
+
+      const enriched = items.map((a: any) => {
+        const cliente = db.usuarios.find((u: any) => u.id === a.cliente_id);
+        const profissional = db.profissionais.find((p: any) => p.id === a.profissional_id);
+        const servico = db.servicos.find((s: any) => s.id === a.servico_id);
+        const loja = db.lojas.find((l: any) => l.id === a.loja_id);
+
+        return {
+          status: "confirmado",
+          ...a,
+          cliente_nome: cliente ? cliente.nome : "Desconhecido",
+          profissional_nome: profissional ? profissional.nome : "Desconhecido",
+          servico_nome: servico ? servico.nome : "Desconhecido",
+          servico_preco: servico ? servico.preco : 0,
+          servico_duracao: servico ? servico.duracao : 30,
+          loja_nome: loja ? loja.nome : "Lojas Inc"
+        };
+      });
+      resData = enriched;
     } else if (method === "POST" && bodyObj) {
       if (bodyObj.id) {
         const idx = db.agendamentos.findIndex((a: any) => a.id === bodyObj.id);
         if (idx >= 0) db.agendamentos[idx] = { ...db.agendamentos[idx], ...bodyObj };
       } else {
-        const newAgend = { ...bodyObj, id: `agend-${Date.now()}` };
+        const newAgend = { status: "confirmado", ...bodyObj, id: `agend-${Date.now()}` };
         db.agendamentos.push(newAgend);
         resData = newAgend;
       }
@@ -2173,7 +2191,7 @@ export default function App() {
                                 <span className={`inline-block text-[9px] font-extrabold px-2.5 py-0.5 rounded-full ${
                                   appt.status === 'confirmado' ? 'bg-pink-50 border border-pink-100 text-pink-800' : 'bg-red-55 bg-red-50 text-red-700 text-xs'
                                 }`}>
-                                  {appt.status.toUpperCase()}
+                                  {(appt.status || "confirmado").toUpperCase()}
                                 </span>
                               </td>
                             </tr>
@@ -2314,7 +2332,7 @@ export default function App() {
                                     <span className={`inline-block text-[9px] font-extrabold px-2 py-0.5 rounded-md ${
                                       appt.status === 'confirmado' ? 'bg-pink-50 border border-pink-100 text-pink-800' : 'bg-red-50 text-red-700'
                                     }`}>
-                                      {appt.status.toUpperCase()}
+                                      {(appt.status || "confirmado").toUpperCase()}
                                     </span>
                                     {appt.status === 'confirmado' && (
                                       <button
