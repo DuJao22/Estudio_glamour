@@ -6,23 +6,424 @@ import { createServer as createViteServer } from "vite";
 // Define DB paths
 const dbPath = path.join(process.cwd(), "src", "database.json");
 
+function getInitialSeedData() {
+  return {
+    "usuarios": [
+      {
+        "id": "user-super-admin-1",
+        "nome": "Laura Fernanda (Super Admin)",
+        "email": "laura@autoestima.com",
+        "senha": "super",
+        "tipo": "super_admin",
+        "loja_id": "loja-1"
+      },
+      {
+        "id": "user-dono-1",
+        "nome": "Grazi Sabrina (Dona)",
+        "email": "grazi@autoestima.com",
+        "senha": "grazi",
+        "tipo": "dono",
+        "loja_id": "loja-1"
+      },
+      {
+        "id": "user-prof-1",
+        "nome": "Laura Fernanda",
+        "email": "laura@autoestima.com",
+        "senha": "laura",
+        "tipo": "profissional",
+        "loja_id": "loja-1",
+        "profissional_id": "prof-1"
+      },
+      {
+        "id": "user-prof-2",
+        "nome": "Grazi Sabrina",
+        "email": "grazi@autoestima.com",
+        "senha": "grazi",
+        "tipo": "profissional",
+        "loja_id": "loja-1",
+        "profissional_id": "prof-2"
+      },
+      {
+        "id": "user-prof-3",
+        "nome": "Juliana Mendes",
+        "email": "ju@autoestima.com",
+        "senha": "ju",
+        "tipo": "profissional",
+        "loja_id": "loja-1",
+        "profissional_id": "prof-3"
+      },
+      {
+        "id": "user-prof-4",
+        "nome": "Camila Rocha",
+        "email": "camila@autoestima.com",
+        "senha": "camila",
+        "tipo": "profissional",
+        "loja_id": "loja-1",
+        "profissional_id": "prof-4"
+      },
+      {
+        "id": "user-cliente-1",
+        "nome": "Mariana Santos",
+        "email": "mari@cliente.com",
+        "senha": "mari",
+        "tipo": "cliente"
+      }
+    ],
+    "lojas": [
+      {
+        "id": "loja-1",
+        "nome": "Núcleo de Autoestima",
+        "endereco": "Rua Rio Tibre, 291 - Novo Riacho, Contagem - MG",
+        "telefone": "(31) 99296-5461 / (31) 98693-9893",
+        "horario_funcionamento": {
+          "inicio": "08:00",
+          "fim": "18:00",
+          "intervalo_inicio": "11:40",
+          "intervalo_fim": "13:40",
+          "split_shift_enabled": true
+        },
+        "slug": "nucleo-autoestima",
+        "imagem": "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=400",
+        "servicos_populares": [
+          "Extensão de Cílios Lash",
+          "Alongamento em Fibra de Vidro",
+          "Design de Sobrancelhas"
+        ]
+      }
+    ],
+    "profissionais": [
+      {
+        "id": "prof-1",
+        "loja_id": "loja-1",
+        "nome": "Laura Fernanda",
+        "especialidade": "Designer de Cílios & Lash Designer (@laurafernanda_lash)",
+        "foto": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150"
+      },
+      {
+        "id": "prof-2",
+        "loja_id": "loja-1",
+        "nome": "Grazi Sabrina",
+        "especialidade": "Unhas, Designer de Sobrancelha & Estética (@studio_grazisabrina1)",
+        "foto": "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=150"
+      },
+      {
+        "id": "prof-3",
+        "loja_id": "loja-1",
+        "nome": "Juliana Mendes",
+        "especialidade": "Design de Sobrancelha & Autoestima Coparceiro",
+        "foto": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"
+      },
+      {
+        "id": "prof-4",
+        "loja_id": "loja-1",
+        "nome": "Camila Rocha",
+        "especialidade": "Cabeleireira & Terapia Capilar",
+        "foto": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150"
+      }
+    ],
+    "servicos": [
+      {
+        "id": "serv-1",
+        "loja_id": "loja-1",
+        "nome": "Alongamento em Fibra de Vidro",
+        "preco": 180,
+        "duracao": 90,
+        "categoria": "Unhas",
+        "imagem": "https://images.unsplash.com/photo-1604654894610-df490651e56c?auto=format&fit=crop&q=80&w=400"
+      },
+      {
+        "id": "serv-2",
+        "loja_id": "loja-1",
+        "nome": "Esmaltação em Gel",
+        "preco": 90,
+        "duracao": 45,
+        "categoria": "Unhas",
+        "imagem": "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=400"
+      },
+      {
+        "id": "serv-3",
+        "loja_id": "loja-1",
+        "nome": "Extensão Volume Russo",
+        "preco": 220,
+        "duracao": 120,
+        "categoria": "Cílios",
+        "imagem": "https://images.unsplash.com/photo-1582966772680-860e372bb558?auto=format&fit=crop&q=80&w=400"
+      },
+      {
+        "id": "serv-4",
+        "loja_id": "loja-1",
+        "nome": "Lash Lifting Premium",
+        "preco": 130,
+        "duracao": 60,
+        "categoria": "Cílios",
+        "imagem": "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&q=80&w=400"
+      },
+      {
+        "id": "serv-5",
+        "loja_id": "loja-1",
+        "nome": "Design com Henna e Epilação",
+        "preco": 75,
+        "duracao": 30,
+        "categoria": "Sobrancelha",
+        "imagem": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=400"
+      },
+      {
+        "id": "serv-6",
+        "loja_id": "loja-1",
+        "nome": "Brown Lamination",
+        "preco": 110,
+        "duracao": 45,
+        "categoria": "Sobrancelha",
+        "imagem": "https://images.unsplash.com/photo-1626015829430-7987c4ea92fb?auto=format&fit=crop&q=80&w=400"
+      },
+      {
+        "id": "serv-7",
+        "loja_id": "loja-1",
+        "nome": "Corte Design Feminino + Lavação",
+        "preco": 160,
+        "duracao": 60,
+        "categoria": "Cabelo",
+        "imagem": "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80&w=400"
+      },
+      {
+        "id": "serv-8",
+        "loja_id": "loja-1",
+        "nome": "Escova Modeladora & Autoestima",
+        "preco": 85,
+        "duracao": 30,
+        "categoria": "Cabelo",
+        "imagem": "https://images.unsplash.com/photo-1605497746444-11d361501e52?auto=format&fit=crop&q=80&w=400"
+      },
+      {
+        "id": "serv-9",
+        "loja_id": "loja-1",
+        "nome": "Extensão Fio a Fio Clássico",
+        "preco": 150,
+        "duracao": 90,
+        "categoria": "Cílios",
+        "imagem": "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&q=80&w=400"
+      },
+      {
+        "id": "serv-10",
+        "loja_id": "loja-1",
+        "nome": "Manicure e Pedicure Conjugada",
+        "preco": 80,
+        "duracao": 60,
+        "categoria": "Unhas",
+        "imagem": "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&q=80&w=400"
+      },
+      {
+        "id": "serv-11",
+        "loja_id": "loja-1",
+        "nome": "Design de Sobrancelhas Simples",
+        "preco": 50,
+        "duracao": 20,
+        "categoria": "Sobrancelha",
+        "imagem": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=400"
+      },
+      {
+        "id": "serv-12",
+        "loja_id": "loja-1",
+        "nome": "Terapia Capilar Regenerativa",
+        "preco": 195,
+        "duracao": 75,
+        "categoria": "Cabelo",
+        "imagem": "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80&w=400"
+      },
+      {
+        "id": "serv-13",
+        "loja_id": "loja-1",
+        "nome": "Limpeza de Pele Profunda",
+        "preco": 140,
+        "duracao": 90,
+        "categoria": "Estética",
+        "imagem": "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&q=80&w=400"
+      },
+      {
+        "id": "serv-14",
+        "loja_id": "loja-1",
+        "nome": "Massagem Facial Relaxante",
+        "preco": 95,
+        "duracao": 45,
+        "categoria": "Estética",
+        "imagem": "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&q=80&w=400"
+      }
+    ],
+    "produtos": [
+      {
+        "id": "prod-1",
+        "loja_id": "loja-1",
+        "nome": "Sérum Nutritivo Pro-Growth Lash",
+        "preco": 79.9,
+        "estoque": 15,
+        "categoria": "Cílios",
+        "imagem": "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?auto=format&fit=crop&q=80&w=200"
+      },
+      {
+        "id": "prod-2",
+        "loja_id": "loja-1",
+        "nome": "Óleo Fortalecedor de Unhas Melaleuca",
+        "preco": 34.9,
+        "estoque": 24,
+        "categoria": "Unhas",
+        "imagem": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80&w=200"
+      },
+      {
+        "id": "prod-3",
+        "loja_id": "loja-1",
+        "nome": "Glow Oil Lamination Finisher",
+        "preco": 58,
+        "estoque": 10,
+        "categoria": "Sobrancelha",
+        "imagem": "https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&q=80&w=200"
+      },
+      {
+        "id": "prod-4",
+        "loja_id": "loja-1",
+        "nome": "Leave-In Macadâmia Termoactive",
+        "preco": 95,
+        "estoque": 8,
+        "categoria": "Cabelo",
+        "imagem": "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&q=80&w=200"
+      },
+      {
+        "id": "prod-5",
+        "loja_id": "loja-1",
+        "nome": "Kit Home Care Manutenção de Cílios",
+        "preco": 49.9,
+        "estoque": 20,
+        "categoria": "Cílios",
+        "imagem": "https://images.unsplash.com/photo-1626015829430-7987c4ea92fb?auto=format&fit=crop&q=80&w=200"
+      },
+      {
+        "id": "prod-6",
+        "loja_id": "loja-1",
+        "nome": "Creme Hidratante para Mãos Orquídea",
+        "preco": 42,
+        "estoque": 18,
+        "categoria": "Unhas",
+        "imagem": "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&q=80&w=200"
+      },
+      {
+        "id": "prod-7",
+        "loja_id": "loja-1",
+        "nome": "Sabonete Líquido Micelar Lash Cleanser",
+        "preco": 38.5,
+        "estoque": 12,
+        "categoria": "Cílios",
+        "imagem": "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&q=80&w=200"
+      },
+      {
+        "id": "prod-8",
+        "loja_id": "loja-1",
+        "nome": "Máscara de Nutrição Capilar Caviar",
+        "preco": 120,
+        "estoque": 6,
+        "categoria": "Cabelo",
+        "imagem": "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&q=80&w=200"
+      }
+    ],
+    "agendamentos": [
+      {
+        "id": "agend-1",
+        "cliente_id": "user-cliente-1",
+        "profissional_id": "prof-1",
+        "servico_id": "serv-2",
+        "loja_id": "loja-1",
+        "data_hora": "2026-05-28 10:00",
+        "status": "confirmado"
+      },
+      {
+        "id": "agend-2",
+        "cliente_id": "user-cliente-1",
+        "profissional_id": "prof-2",
+        "servico_id": "serv-3",
+        "loja_id": "loja-1",
+        "data_hora": "2026-05-28 14:30",
+        "status": "confirmado"
+      }
+    ]
+  };
+}
+
 // Helper to read DB
 function getDB() {
+  let db: any = { usuarios: [], lojas: [], profissionais: [], servicos: [], produtos: [], agendamentos: [] };
   try {
     if (fs.existsSync(dbPath)) {
       const data = fs.readFileSync(dbPath, "utf-8");
-      return JSON.parse(data);
+      db = JSON.parse(data);
+    } else {
+      db = getInitialSeedData();
+      saveDB(db);
+      return db;
     }
   } catch (error) {
-    console.error("Erro ao ler banco de dados JSON:", error);
+    console.error("Erro ao ler banco de dados JSON, usando defaults:", error);
+    db = getInitialSeedData();
+    saveDB(db);
+    return db;
   }
-  // Fallback default
-  return { usuarios: [], lojas: [], profissionais: [], servicos: [], agendamentos: [] };
+
+  // Ensure all collections exist
+  if (!db.usuarios) db.usuarios = [];
+  if (!db.lojas) db.lojas = [];
+  if (!db.profissionais) db.profissionais = [];
+  if (!db.servicos) db.servicos = [];
+  if (!db.produtos) db.produtos = [];
+  if (!db.agendamentos) db.agendamentos = [];
+
+  // Self-healing check: If the stored JSON is empty or missing content, inject the default templates
+  let updated = false;
+  const seed = getInitialSeedData();
+
+  if (db.lojas.length === 0) {
+    db.lojas = seed.lojas;
+    updated = true;
+  } else {
+    // Ensure "nucleo-autoestima" exists in the stores list
+    const hasAutoestima = db.lojas.some((l: any) => l.slug === "nucleo-autoestima" || l.id === "loja-1");
+    if (!hasAutoestima) {
+      db.lojas.push(seed.lojas[0]);
+      updated = true;
+    }
+  }
+
+  if (db.usuarios.length === 0) {
+    db.usuarios = seed.usuarios;
+    updated = true;
+  }
+
+  if (db.profissionais.length === 0) {
+    db.profissionais = seed.profissionais;
+    updated = true;
+  }
+
+  if (db.servicos.length === 0) {
+    db.servicos = seed.servicos;
+    updated = true;
+  }
+
+  if (db.produtos.length === 0) {
+    db.produtos = seed.produtos;
+    updated = true;
+  }
+
+  if (updated) {
+    console.log("Banco de dados JSON inicializado ou corrigido com sucesso com dados padrão.");
+    saveDB(db);
+  }
+
+  return db;
 }
 
 // Helper to write DB
 function saveDB(data: any) {
   try {
+    const dir = path.dirname(dbPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
     fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), "utf-8");
     return true;
   } catch (err) {
