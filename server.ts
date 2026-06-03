@@ -88,7 +88,8 @@ function getInitialSeedData() {
           "Extensão de Cílios Lash",
           "Alongamento em Fibra de Vidro",
           "Design de Sobrancelhas"
-        ]
+        ],
+        "instagram": "laurafernanda_lash"
       }
     ],
     "profissionais": [

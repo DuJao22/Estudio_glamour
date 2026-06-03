@@ -90,7 +90,7 @@ const getOfflineDB = () => {
         slug: "nucleo-autoestima",
         imagem: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=400",
         servicos_populares: ["Extensão de Cílios Lash", "Alongamento em Fibra de Vidro", "Design de Sobrancelhas"],
-        instagram: "studio_grazisabrina1"
+        instagram: "laurafernanda_lash"
       }
     ],
     profissionais: [
@@ -1311,14 +1311,14 @@ export default function App() {
                 Olá, {currentUser.nome.split(' ')[0]}
               </span>
               <a
-                href={`https://instagram.com/${selectedLojaDetail?.loja?.instagram || "studio_grazisabrina1"}`}
+                href={`https://instagram.com/${selectedLojaDetail?.loja?.instagram || "laurafernanda_lash"}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 px-2 py-1.5 sm:px-3 sm:py-1.5 bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 hover:scale-102 hover:opacity-95 text-white text-[10px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all shadow-sm shrink-0"
-                title={`Siga @${selectedLojaDetail?.loja?.instagram || "studio_grazisabrina1"} no Instagram`}
+                title={`Siga @${selectedLojaDetail?.loja?.instagram || "laurafernanda_lash"} no Instagram`}
               >
                 <Instagram className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">@{selectedLojaDetail?.loja?.instagram || "studio_grazisabrina1"}</span>
+                <span className="hidden sm:inline">@{selectedLojaDetail?.loja?.instagram || "laurafernanda_lash"}</span>
               </a>
               <button
                 onClick={handleLogout}
@@ -1331,14 +1331,14 @@ export default function App() {
           ) : (
             <div className="flex items-center gap-1.5 sm:gap-2 pl-1.5 sm:pl-2 border-l border-neutral-200 shrink-0">
               <a
-                href={`https://instagram.com/${selectedLojaDetail?.loja?.instagram || "studio_grazisabrina1"}`}
+                href={`https://instagram.com/${selectedLojaDetail?.loja?.instagram || "laurafernanda_lash"}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 px-2 py-1.5 sm:px-3 sm:py-2 bg-gradient-to-r from-pink-500 via-pink-600 to-purple-600 hover:scale-102 hover:opacity-95 text-white text-[10px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all shadow-sm text-center shrink-0"
-                title={`Siga @${selectedLojaDetail?.loja?.instagram || "studio_grazisabrina1"} no Instagram`}
+                title={`Siga @${selectedLojaDetail?.loja?.instagram || "laurafernanda_lash"} no Instagram`}
               >
                 <Instagram className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">@{selectedLojaDetail?.loja?.instagram || "studio_grazisabrina1"}</span>
+                <span className="hidden sm:inline">@{selectedLojaDetail?.loja?.instagram || "laurafernanda_lash"}</span>
               </a>
               <button
                 onClick={() => {
